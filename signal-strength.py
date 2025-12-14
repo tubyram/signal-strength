@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 import threading
 
-HDHOMERUN_IP = "192.168.68.112"
+HDHOMERUN_IP = "hdhomerun.local"
 
 def get_channels():
     """Get list of all channels from HDHomeRun"""
