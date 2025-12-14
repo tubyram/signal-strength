@@ -1,23 +1,23 @@
-#!/usr/bin/env python3
 import requests
 import time
 import json
 import sys
 from datetime import datetime
+import threading
 
-HDHOMERUN_IP = "hdhomerun.local"  # or use IP like "192.168.68.xxx"
+HDHOMERUN_IP = "192.168.68.112"
 
 def get_channels():
     """Get list of all channels from HDHomeRun"""
     resp = requests.get(f"http://{HDHOMERUN_IP}/lineup.json")
     return resp.json()
 
-def tune_channel(channel_number):
-    """Tune to a specific channel"""
-    # Use tuner0 for scanning
+def start_stream(channel_number):
+    """Start streaming a channel (keeps tuner locked)"""
     url = f"http://{HDHOMERUN_IP}:5004/auto/v{channel_number}"
-    requests.get(url, timeout=2)
-    time.sleep(2)  # Wait for signal to stabilize
+    # Start streaming but don't read it
+    resp = requests.get(url, stream=True, timeout=30)
+    return resp
 
 def get_status():
     """Get current tuner status"""
@@ -27,6 +27,11 @@ def get_status():
 def scan_all_channels():
     """Scan all channels and record signal quality"""
     channels = get_channels()
+    
+    # Filter to major channels only
+    major_channels = ['2.1', '4.1', '5.1', '8.1', '11.1', '13.1', '21.1', '27.1', '33.1']
+    channels = [ch for ch in channels if ch['GuideNumber'] in major_channels]
+    
     results = []
     
     print(f"Scanning {len(channels)} channels...")
@@ -35,13 +40,22 @@ def scan_all_channels():
         channel_num = channel['GuideNumber']
         channel_name = channel['GuideName']
         
-        print(f"[{idx+1}/{len(channels)}] Tuning to {channel_num} {channel_name}...", end=' ')
+        print(f"[{idx+1}/{len(channels)}] Tuning to {channel_num:>5} {channel_name:<10}...", end=' ', flush=True)
         
         try:
-            tune_channel(channel_num)
+            # Start the stream (this tunes the tuner)
+            stream_resp = start_stream(channel_num)
+            
+            # Wait a moment for tuner to lock
+            time.sleep(2)
+            
+            # Check status while stream is active
             status = get_status()
             
-            # Find the tuner that's currently active
+            # Close the stream
+            stream_resp.close()
+            
+            # Find the active tuner
             for tuner in status:
                 if tuner.get('VctNumber') == channel_num:
                     result = {
@@ -60,15 +74,13 @@ def scan_all_channels():
         except Exception as e:
             print(f"ERROR: {e}")
             
-        time.sleep(0.5)  # Brief pause between channels
-    
     return results
 
 def main():
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     if len(sys.argv) > 1:
-        orientation = sys.argv[1]  # e.g., "210deg"
+        orientation = sys.argv[1]
         filename = f"antenna_scan_{orientation}_{timestamp}.json"
     else:
         filename = f"antenna_scan_{timestamp}.json"
@@ -79,9 +91,14 @@ def main():
     results = scan_all_channels()
     
     # Calculate summary stats
-    avg_signal_strength = sum(r['signal_strength'] for r in results) / len(results)
-    avg_signal_quality = sum(r['signal_quality'] for r in results) / len(results)
-    channels_100_quality = sum(1 for r in results if r['signal_quality'] == 100)
+    if len(results) > 0:
+        avg_signal_strength = sum(r['signal_strength'] for r in results) / len(results)
+        avg_signal_quality = sum(r['signal_quality'] for r in results) / len(results)
+        channels_100_quality = sum(1 for r in results if r['signal_quality'] == 100)
+    else:
+        avg_signal_strength = 0
+        avg_signal_quality = 0
+        channels_100_quality = 0
     
     output = {
         'timestamp': timestamp,
