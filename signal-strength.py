@@ -29,7 +29,7 @@ def scan_all_channels():
     channels = get_channels()
     
     # Filter to major channels only
-    major_channels = ['2.1', '4.1', '5.1', '8.1', '11.1', '13.1', '21.1', '27.1', '33.1']
+    major_channels = ['4.1', '5.1', '8.1', '11.1', '13.1', '21.1', '27.1', '33.1']
     channels = [ch for ch in channels if ch['GuideNumber'] in major_channels]
     
     results = []
@@ -47,7 +47,7 @@ def scan_all_channels():
             stream_resp = start_stream(channel_num)
             
             # Wait a moment for tuner to lock
-            time.sleep(2)
+            time.sleep(1)
             
             # Check status while stream is active
             status = get_status()
