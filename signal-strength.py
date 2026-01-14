@@ -2,7 +2,6 @@
 # dependencies = ["requests"]
 # ///
 import requests
-import subprocess
 import time
 import json
 import sys
@@ -27,21 +26,27 @@ def get_channels():
     return resp.json()
 
 def tune_and_get_status(channel_number):
-    """Tune to channel using curl subprocess and get status.
-
-    Using curl in a subprocess ensures clean connection handling -
-    the tuner is properly released when the process is terminated.
-    """
+    """Tune to channel and get status, properly releasing the tuner."""
     url = f"http://{HDHOMERUN_IP}:5004/auto/v{channel_number}"
-    proc = subprocess.Popen(
-        ["curl", "-s", "-m", "5", url],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
-    )
-    time.sleep(1)  # Wait for tuner to lock
+
+    # Start streaming
+    stream = requests.get(url, stream=True, timeout=5)
+
+    # Wait for tuner to lock
+    time.sleep(1)
+
+    # Get status while stream is active
     status = requests.get(f"http://{HDHOMERUN_IP}/status.json").json()
-    proc.terminate()
-    proc.wait()
+
+    # Read some data to establish the stream, then close properly
+    try:
+        stream.raw.read(1000)
+    except:
+        pass
+
+    stream.close()
+    del stream
+
     return status
 
 def find_tuner_for_channel(status, channel_num):
@@ -51,9 +56,12 @@ def find_tuner_for_channel(status, channel_num):
             return tuner
     return None
 
-def scan_channel(channel_num, channel_name):
+def scan_channel(channel_num, channel_name, debug=False):
     """Scan a single channel and return result dict or None if failed"""
     status = tune_and_get_status(channel_num)
+    if debug:
+        print(f"\nDEBUG: Looking for channel {channel_num}")
+        print(f"DEBUG: Status response: {status}")
     tuner = find_tuner_for_channel(status, channel_num)
     if tuner:
         return {
