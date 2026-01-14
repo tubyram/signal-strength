@@ -8,11 +8,11 @@ import sys
 from datetime import datetime
 
 HDHOMERUN_IP = "hdhomerun.local"
-MAJOR_CHANNELS = ['4.1', '5.1', '8.1', '11.1', '13.1', '21.1', '27.1', '33.1']
+MAJOR_CHANNELS = ['4.1', '5.1', '8.8', '11.1', '13.1', '21.1', '27.1', '33.1']
 CHANNEL_NAMES = {
     '4.1': 'FOX',
     '5.1': 'NBC',
-    '8.1': 'ABC',
+    '8.8': 'ABC',
     '11.1': 'CBS',
     '13.1': 'PBS',
     '21.1': 'KTXA',
@@ -33,7 +33,7 @@ def tune_and_get_status(channel_number):
     stream = requests.get(url, stream=True, timeout=5)
 
     # Wait for tuner to lock
-    time.sleep(1)
+    time.sleep(0.5)
 
     # Get status while stream is active
     status = requests.get(f"http://{HDHOMERUN_IP}/status.json").json()
@@ -125,14 +125,14 @@ def monitor_continuously():
             print(" | ".join(channel_strs), end="")
 
             if failed_channels:
-                print(" | MIN:FAILED")
+                print(" | Minimum:FAILED")
             elif results:
                 min_sq = min(r['signal_quality'] for r in results)
-                print(f" | MIN:{min_sq}%")
+                print(f" | Minimum:{min_sq}%")
             else:
                 print()
 
-            time.sleep(2)
+            time.sleep(0.5)
     except KeyboardInterrupt:
         print("\n\nMonitoring stopped.")
         sys.exit(0)
