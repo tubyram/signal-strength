@@ -33,7 +33,7 @@ def tune_and_get_status(channel_number):
     stream = requests.get(url, stream=True, timeout=5)
 
     # Wait for tuner to lock
-    time.sleep(0.5)
+    time.sleep(1)
 
     # Get status while stream is active
     status = requests.get(f"http://{HDHOMERUN_IP}/status.json").json()
