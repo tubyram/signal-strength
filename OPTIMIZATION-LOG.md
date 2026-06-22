@@ -13,7 +13,15 @@ channel list and ran full scans to confirm no other channel regressed.
 ### Result — clear win, kept after this session
 
 Antenna ended in an unusual orientation (roughly aimed SSE toward Cedar Hill,
-~160°). Signal Quality (SQ) before vs. after, by virtual channel:
+~160°). Photos of the exact position:
+
+- `antenna-position-2026-06-21_wide.jpg` — wide shot, antenna on its articulating
+  clamp mount in the network closet by the shelf.
+- `antenna-position-2026-06-21_tilt.jpg` — close-up showing the upward tilt and
+  off-axis aim that produced the win. This is the orientation to restore if it
+  gets bumped.
+
+Signal Quality (SQ) before vs. after, by virtual channel:
 
 | Ch       | Baseline SQ | Optimized SQ (avg of 2 clean passes) |
 |----------|-------------|--------------------------------------|
