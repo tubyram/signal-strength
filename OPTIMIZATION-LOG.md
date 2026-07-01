@@ -1,5 +1,66 @@
 # Antenna Optimization Log
 
+## 2026-07-01 — FOX (4.1 KDFW) re-aim for World Cup; ABC traded away
+
+**Goal:** Re-maximize FOX 4.1 for World Cup soccer while keeping CBS/ABC at
+least as good, and improve NBC if possible. Same rig: `mike-ubuntu`,
+HDHomeRun at `hdhomerun.local`, ClearStream 2V in the network closet.
+
+**Starting state was NOT the 06-21 FOX-optimized aim** — the antenna had moved
+between sessions into an NBC-favoring position (FOX had fallen back to ~71–78,
+its baseline; NBC/CBS were up). Confirmed the FOX↔NBC tradeoff is real, and
+found a second, sharper one: **FOX↔ABC**.
+
+**Method:** Added an `--aim` mode to the script (live watch of a focused 2-channel
+pair with per-channel peak tracking) — far better for hunting than the old
+all-6 `--watch`. Hunted azimuth then tilt while reading FOX against its rival.
+
+**Key finding — the closet has hit its ceiling.** FOX and ABC are directly
+anti-correlated here: every tilt/azimuth that lifts FOX nulls ABC, and vice
+versa. Laying the antenna *flatter* (more horizontal) is the FOX win; standing
+it up or rotating ~5° left recovers ABC at FOX's expense. The clean middle
+spot exists but is **not hand-reproducible** (sub-2° precision). So the stated
+constraint (FOX up AND ABC held) is unsatisfiable at this location. Chose
+FOX-max for the tournament; ABC is the deliberate sacrifice.
+
+### Result — FOX-max position (kept), flatter tilt + center azimuth
+
+Signal Quality (SQ), today's starting state vs. locked FOX-max:
+
+| Ch       | Start SQ | FOX-max SQ | Note                              |
+|----------|----------|------------|-----------------------------------|
+| 4.1 FOX  | ~75      | **95**     | now the strongest major, SYM:100  |
+| 5.1 NBC  | ~84      | 79         | ~held                             |
+| 8.8 ABC  | ~89      | **70**     | traded away; dips to ~55, still decodes |
+| 11.1 CBS | 100      | 100        | held                              |
+| 13.1 PBS | ~95      | 93         | held                              |
+| 33.1 CW  | ~84      | 85         | held                              |
+
+FOX at SQ 95 / SYM 100 is a bigger win than 06-21 ever got (~80). ABC at ~70
+is above the dropout cliff and still decodes, but has lost its margin and will
+glitch occasionally — acceptable only because FOX is the priority right now.
+
+**Antenna position is flatter/more horizontal than the 06-21 aim.** Photograph
+and secure it — it's touchy and ABC is already marginal, so a bump loses FOX.
+
+### Raw data (committed)
+
+- `antenna_scan_20260630_19*.json` — the NBC-favoring starting state (3 passes).
+- `antenna_scan_fox-flat-tilt_20260701_174623.json` — first flat-tilt scan (ABC
+  read a spurious 48 here; two follow-ups showed ABC ~82, so ignore that 48).
+- `antenna_scan_fox-final-2026-07-01_20260701_180317.json` — locked FOX-max.
+
+### Revert / next time
+
+- **After the World Cup, revert** for ABC's sake: stand the antenna up / rotate
+  ~5° left to recover ABC to ~92 (costs FOX back down to ~78).
+- **The real fix is the attic install.** This session proved the closet is
+  multipath-limited — you can only rob one channel to feed another. A higher
+  antenna with clear line of sight to Cedar Hill should lift FOX *and* ABC
+  together. That's the trigger the 06-21 log called for, and we've now hit it.
+
+---
+
 ## 2026-06-21 — FOX (4.1 KDFW) aiming pass
 
 **Goal:** Maximize FOX 4.1 reception (for soccer) without sacrificing the other

@@ -1,0 +1,53 @@
+{
+  "timestamp": "20260630_191950",
+  "summary": {
+    "total_channels": 6,
+    "avg_signal_strength": 84.5,
+    "avg_signal_quality": 87.7,
+    "channels_with_100_quality": 1
+  },
+  "channels": [
+    {
+      "channel": "4.1",
+      "name": "KDFW-DT",
+      "signal_strength": 77,
+      "signal_quality": 68,
+      "symbol_quality": 100
+    },
+    {
+      "channel": "5.1",
+      "name": "KXAS-HD",
+      "signal_strength": 83,
+      "signal_quality": 85,
+      "symbol_quality": 0
+    },
+    {
+      "channel": "8.8",
+      "name": "WFAA-HD",
+      "signal_strength": 86,
+      "signal_quality": 92,
+      "symbol_quality": 100
+    },
+    {
+      "channel": "11.1",
+      "name": "KTVT",
+      "signal_strength": 90,
+      "signal_quality": 100,
+      "symbol_quality": 100
+    },
+    {
+      "channel": "13.1",
+      "name": "KERA-HD",
+      "signal_strength": 85,
+      "signal_quality": 97,
+      "symbol_quality": 0
+    },
+    {
+      "channel": "33.1",
+      "name": "KDAF-DT",
+      "signal_strength": 86,
+      "signal_quality": 84,
+      "symbol_quality": 100
+    }
+  ]
+}

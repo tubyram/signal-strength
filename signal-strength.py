@@ -137,9 +137,60 @@ def monitor_continuously():
         print("\n\nMonitoring stopped.")
         sys.exit(0)
 
+def aim_mode(watch_channels):
+    """Live aiming assistant. Watches a focused set of channels (default the
+    FOX<->NBC tradeoff pair), tracks per-channel peak SQ, and prints one line
+    per cycle so you can correlate the numbers with a slow hand rotation.
+
+    The FIRST channel in the list is the primary target: new peaks on it are
+    flagged with a '*'. Only one tuner is used (channels are read
+    sequentially), so a live viewer on another tuner is left undisturbed.
+    """
+    names = [f"{ch} {CHANNEL_NAMES.get(ch, '')}".strip() for ch in watch_channels]
+    print("Live aim mode — Ctrl+C to stop")
+    print(f"Watching: {', '.join(names)}   (primary target: {names[0]})")
+    print("Rotate/tilt slowly and pause; peaks are tracked per channel.\n")
+
+    peak = {ch: 0 for ch in watch_channels}
+    try:
+        while True:
+            cells = []
+            new_primary_peak = False
+            for ch in watch_channels:
+                try:
+                    result = scan_channel(ch, CHANNEL_NAMES.get(ch, ch))
+                except Exception:
+                    result = None  # tuner timeout / contention — skip this cycle's read
+                sq = result['signal_quality'] if result else None
+                ss = result['signal_strength'] if result else None
+                if sq is not None and sq > peak[ch]:
+                    peak[ch] = sq
+                    if ch == watch_channels[0]:
+                        new_primary_peak = True
+                label = CHANNEL_NAMES.get(ch, ch)
+                if sq is None:
+                    cells.append(f"{label} FAIL")
+                else:
+                    cells.append(f"{label} SS:{ss:>2} SQ:{sq:>3} (pk {peak[ch]:>3})")
+            flag = "  * NEW FOX PEAK" if new_primary_peak else ""
+            print(f"[{datetime.now().strftime('%H:%M:%S')}]  " + "  |  ".join(cells) + flag)
+    except KeyboardInterrupt:
+        print("\nStopped. Peak SQ this session:")
+        for ch in watch_channels:
+            print(f"  {ch} {CHANNEL_NAMES.get(ch, ch):<5} peak SQ {peak[ch]}%")
+        sys.exit(0)
+
+
 def main():
     if len(sys.argv) > 1 and sys.argv[1] in ['-w', '--watch']:
         monitor_continuously()
+        return
+
+    if len(sys.argv) > 1 and sys.argv[1] in ['-a', '--aim']:
+        watch = ['4.1', '5.1']
+        if len(sys.argv) > 2:
+            watch = [c.strip() for c in sys.argv[2].split(',') if c.strip()]
+        aim_mode(watch)
         return
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
